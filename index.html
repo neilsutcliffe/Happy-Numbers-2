@@ -5,14 +5,14 @@
         <!--[if IE]>
         <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
         <![endif]-->
-        <link href="./css/site.css" rel="stylesheet">
         <script   src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
+        <script   src="./happy.js"></script>
 
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
         <script>
-            $(document).ready(function(){
 
+            $(document).ready(function(){
                 $("#IsItHappy").click(function (){
                     onButtonClick();
                 });
@@ -23,124 +23,88 @@
                 });
             });
 
-            var numbersTested;
-
             var onButtonClick = function ()
             {
-                emptyResults();
-                var number = GetNumberFromInput();
-                addLineToResults('<span class="total">' + number + "</span>");
-                var happy = isNumberHappy(number);
+                viewModel.emptyResults();
+                var number = viewModel.GetNumberFromInput();
+                var result = isNumberHappy(number);
 
-                if (happy)
+                if (result.happy)
                 {
-                    declareHappy(number);
+                    viewModel.declareHappy(number);
                 }
                 else {
-                    declareSad(number);
+                    viewModel.declareSad(number);
+                }
+
+                displaySteps(result);
+            }
+
+            var displaySteps = function (result)
+            {
+                for (var i = 0; i < result.steps.length; i++) {
+                    var step = result.steps[i];
+
+                    if (step.duplicate)
+                        viewModel.addDuplicatedTotalToResults(step.value);
+                    else
+                        viewModel.addTotalToResults(step.value);
+                    viewModel.addEquationToResult(step.equation);
                 }
             }
 
-            var addLineToResults = function (text)
-            {
-                $('#results-list').append(
-                    $('<li>').append(
-                        text)
-                );
-            }
-
-            var emptyResults = function ()
-            {
-                $('#results-list').empty();
-                numbersTested = [];
-            }
-
-            var declareHappy = function (numberToDeclare)
-            {
-                $("#result-banner").addClass("happy").removeClass("sad").html(numberToDeclare + " is happy. :)")
-            }
-
-            var declareSad = function (numberToDeclare)
-            {
-                $("#result-banner").addClass("sad").removeClass("happy").html(numberToDeclare + " is unhappy. :(")
-            }
-
-            var GetNumberFromInput = function ()
-            {
-                var number = $("#Number").val();
-
-                if (number != NaN)
+            // MOST STUFF FOR MODIFYING/ACCESSING THE VIEW
+            var viewModel = {
+                addTotalToResults: function (total)
                 {
-                    return number;
-                }
-                return 0;
-            }
-
-            var equation = "";
-
-            var isNumberHappy = function (numberToTest)
-            {
-                var inArray = numbersTested.indexOf(numberToTest);
-                numbersTested.push(numberToTest);
-
-                if (numberToTest < 2) // Negative numbers are always happy :) Shouldn't get here though
+                    $('#results-list').append(
+                        $('<li>').append(
+                            $('<b>').append(
+                            total)
+                        )
+                    );
+                },
+                addDuplicatedTotalToResults: function (total)
                 {
-                    return true;
-                }
-                if (inArray != -1)
+                    $('#results-list').append(
+                        $('<li class="duplicate">').append(
+                            $('<b>').append(
+                            total)
+                        )
+                    );
+                },
+                addEquationToResult: function (text)
                 {
-                    return false;
-                }
-
-                var number = transformNumber(numberToTest);
-
-                addLineToResults('<i class="glyphicon glyphicon-chevron-right"></i>');
-                addLineToResults(equation);
-                addLineToResults('<i class="glyphicon glyphicon-chevron-right"></i>');
-                addLineToResults('<span class="total">' + number + "</span>");
-
-                equation = "";
-
-                // Check this numberToTest
-                return isNumberHappy(number);
-            }
-
-            var transformNumber = function (source)
-            {
-                if (source == 0) {
+                    $('#results-list').append(
+                        $('<li>').append(
+                            text)
+                    );
+                },
+                emptyResults: function ()
+                {
+                    $('#results-list').empty();
+                    numbersTested = [];
+                },
+                declareHappy: function (numberToDeclare)
+                {
+                    $("#result-banner").addClass("happy").removeClass("sad").html(numberToDeclare + " is happy. :)")
+                },
+                declareSad: function (numberToDeclare)
+                {
+                    $("#result-banner").addClass("sad").removeClass("happy").html(numberToDeclare + " is unhappy. :(")
+                },
+                GetNumberFromInput: function ()
+                {
+                    var number = $("#Number").val();
+                    if (number != NaN)
+                        return number;
                     return 0;
                 }
-                if (source < 10)
-                {
-                    equation = addToCurrentEquation(equation, source);
-                    return  source * source;
-                }
-                else {
-                    var lastDigit =  source % 10;
-                    equation = addToCurrentEquation(equation, lastDigit);
-
-                    return transformNumber( source / 10 | 0 ) + ( lastDigit * lastDigit );
-                }
-            }
-
-            function addToCurrentEquation(existing, numberToAdd)
-            {
-                var addition =  numberToAdd + "&sup2;";
-
-                if (existing)
-                    return existing = addition + " + " + existing;
-                else
-                    return addition;
             }
 
         </script>
 
         <style>
-            span.total
-            {
-                font-weight: bold;
-            }
-
             body, html
             {
                 height: 100%;
@@ -157,6 +121,24 @@
               position: relative;
               bottom: 1ex;
               font-size: 80%;
+            }
+
+            #results-list
+            {
+                color: #555;
+            }
+
+            #results-list b
+            {
+                color: black;
+            }
+
+            #results-list li.duplicate
+            {
+                background-color: white;
+                border-radius: 0.25em;
+                padding-left: 1em;
+                padding-right: 1em;
             }
 
             #result-banner.happy
