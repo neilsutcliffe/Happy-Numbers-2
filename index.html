@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Client-Side Happy Numbers</title>
+        <!--[if IE]>
+        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <link href="./css/site.css" rel="stylesheet">
+        <script   src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
+
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script>
+            $(document).ready(function(){
+
+                $("#IsItHappy").click(function (){
+                    onButtonClick();
+                });
+
+                $('#happy-form').submit(function() {
+                    onButtonClick();
+                    return false; // Prevent form submission
+                });
+            });
+
+            var numbersTested;
+
+            var onButtonClick = function ()
+            {
+                emptyResults();
+                var number = GetNumberFromInput();
+                addLineToResults('<span class="total">' + number + "</span>");
+                var happy = isNumberHappy(number);
+
+                if (happy)
+                {
+                    declareHappy(number);
+                }
+                else {
+                    declareSad(number);
+                }
+            }
+
+            var addLineToResults = function (text)
+            {
+                $('#results-list').append(
+                    $('<li>').append(
+                        text)
+                );
+            }
+
+            var emptyResults = function ()
+            {
+                $('#results-list').empty();
+                numbersTested = [];
+            }
+
+            var declareHappy = function (numberToDeclare)
+            {
+                $("#result-banner").addClass("happy").removeClass("sad").html(numberToDeclare + " is happy. :)")
+            }
+
+            var declareSad = function (numberToDeclare)
+            {
+                $("#result-banner").addClass("sad").removeClass("happy").html(numberToDeclare + " is unhappy. :(")
+            }
+
+            var GetNumberFromInput = function ()
+            {
+                var number = $("#Number").val();
+
+                if (number != NaN)
+                {
+                    return number;
+                }
+                return 0;
+            }
+
+            var equation = "";
+
+            var isNumberHappy = function (numberToTest)
+            {
+                var inArray = numbersTested.indexOf(numberToTest);
+                numbersTested.push(numberToTest);
+
+                if (numberToTest < 2) // Negative numbers are always happy :) Shouldn't get here though
+                {
+                    return true;
+                }
+                if (inArray != -1)
+                {
+                    return false;
+                }
+
+                var number = transformNumber(numberToTest);
+
+                addLineToResults('<i class="glyphicon glyphicon-chevron-right"></i>');
+                addLineToResults(equation);
+                addLineToResults('<i class="glyphicon glyphicon-chevron-right"></i>');
+                addLineToResults('<span class="total">' + number + "</span>");
+
+                equation = "";
+
+                // Check this numberToTest
+                return isNumberHappy(number);
+            }
+
+            var transformNumber = function (source)
+            {
+                if (source == 0) {
+                    return 0;
+                }
+                if (source < 10)
+                {
+                    equation = addToCurrentEquation(equation, source);
+                    return  source * source;
+                }
+                else {
+                    var lastDigit =  source % 10;
+                    equation = addToCurrentEquation(equation, lastDigit);
+
+                    return transformNumber( source / 10 | 0 ) + ( lastDigit * lastDigit );
+                }
+            }
+
+            function addToCurrentEquation(existing, numberToAdd)
+            {
+                var addition =  numberToAdd + "&sup2;";
+
+                if (existing)
+                    return existing = addition + " + " + existing;
+                else
+                    return addition;
+            }
+
+        </script>
+
+        <style>
+            span.total
+            {
+                font-weight: bold;
+            }
+
+            body, html
+            {
+                height: 100%;
+                background-color: #2C4251;
+            }
+
+            .container
+            {
+                background-color: #C1C1C1;
+                min-height: 100%;
+            }
+
+            .sup {
+              position: relative;
+              bottom: 1ex;
+              font-size: 80%;
+            }
+
+            #result-banner.happy
+            {
+                background-color: #44D661;
+            }
+
+            #result-banner.sad
+            {
+                background-color: #35150C;
+                color: white;
+            }
+
+            #result-banner
+            {
+                font-size: 32px;
+                text-align: center;
+                padding: .5em 1em;
+                display: inline-block;
+                border-radius: 10px;
+            }
+
+        </style>
+    </head>
+    <body id="body">
+        <div class="container">
+
+            <h1>Happy Numbers</h1>
+
+            <blockquote>
+                <p>Any number that reduces to one when you take the sum of the square of its digits and continue iterating it until it yields 1 is a happy number, any number that doesn't, isn't.</p>
+                <footer>The Doctor - <cite title="TV Show">Doctor Who</cite></footer>
+            </blockquote>
+
+
+            <div class="row">
+
+                <form id="happy-form" class="text-center col-md-4">
+                    <div class="embed-responsive embed-responsive-4by3">
+                        <iframe class="embed-responsive-item" src="http://www.youtube.com/embed/ee2If8jSxUo"  allowfullscreen></iframe>
+                    </div>
+
+                    <br>
+
+                    <div class="form-group text-center">
+                       <label for="IsItHappy">Enter Number</label>
+                       <input type="number" class="form-control" id="Number" placeholder="Happy?">
+                    </div>
+
+                    <div class="text-left">
+                        <button type="button" class="btn-lg btn-success btn-block" id="IsItHappy">Is It Happy?</button>
+                    </div>
+                    <br>
+                </form>
+                <div class="text-center col-md-8">
+                    <ul class="list-inline list-unstyled" id="results-list">
+                    </ul>
+
+                    <h3 id="result-banner"></h3>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
